@@ -26,7 +26,7 @@ const float alpha = 0.98f;
 float ax_lin, ay_lin, az_lin;
 
 void setup() {
-  Serial.begin(921600);              // HIGH baud rate
+  Serial.begin(115200);              // HIGH baud rate
   Wire.begin(21, 22);
   mpu.initialize();
 
@@ -71,11 +71,11 @@ void loop() {
   ay_lin = ay - g_y;
   az_lin = az - g_z;
 
-  /* ===== Binary Serial Frame ===== */
-  Serial.write(0xAA);   // Frame header
-  Serial.write(0x55);
-
-  Serial.write((uint8_t*)&ax_lin, sizeof(float));
-  Serial.write((uint8_t*)&ay_lin, sizeof(float));
-  Serial.write((uint8_t*)&az_lin, sizeof(float));
+  Serial.print(ax_lin);
+  Serial.print(" |");
+  Serial.print(ay_lin);
+  Serial.print(" |");
+  Serial.print(az_lin);
+ delay(40);
+  
 }
