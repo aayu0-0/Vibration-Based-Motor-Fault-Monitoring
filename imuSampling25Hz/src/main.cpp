@@ -1,14 +1,14 @@
+
+
 #include <Arduino.h>
 #include <Wire.h>
 #include "MPU6050.h"
 
 MPU6050 mpu;
 
-/* ===== Timing ===== */
+/* ===== Sampling Configuration ===== */
+const unsigned long SAMPLE_PERIOD_US = 40000;   // 500 Hz
 unsigned long lastMicros = 0;
-const unsigned long SAMPLE_PERIOD_US = 2000; // 500 Hz
-
-float dt;
 
 /* ===== Raw Sensor ===== */
 int16_t ax_raw, ay_raw, az_raw;
@@ -25,24 +25,31 @@ const float alpha = 0.98f;
 /* ===== Linear Acceleration ===== */
 float ax_lin, ay_lin, az_lin;
 
+/* ===== Time ===== */
+unsigned long sampleIndex = 0;
+
 void setup() {
-  Serial.begin(115200);              // HIGH baud rate
+  Serial.begin(115200);
   Wire.begin(21, 22);
+
   mpu.initialize();
 
   lastMicros = micros();
 }
 
 void loop() {
-  unsigned long now = micros();
-  if (now - lastMicros < SAMPLE_PERIOD_US) return;
 
-  dt = (now - lastMicros) * 1e-6f;
+  unsigned long now = micros();
+
+  if (now - lastMicros < SAMPLE_PERIOD_US)
+    return;
+
+  float dt = (now - lastMicros) * 1e-6f;
   lastMicros = now;
 
   /* ===== Read MPU6050 ===== */
   mpu.getMotion6(&ax_raw, &ay_raw, &az_raw,
-                &gx_raw, &gy_raw, &gz_raw);
+                 &gx_raw, &gy_raw, &gz_raw);
 
   /* ===== Convert Units ===== */
   ax = (ax_raw / 16384.0f) * 9.81f;
@@ -71,11 +78,17 @@ void loop() {
   ay_lin = ay - g_y;
   az_lin = az - g_z;
 
-  Serial.print(ax_lin);
-  Serial.print(" |");
-  Serial.print(ay_lin);
-  Serial.print(" |");
-  Serial.print(az_lin);
- delay(40);
-  
+  /* ===== Timestamp ===== */
+  float timeSec = sampleIndex * (SAMPLE_PERIOD_US / 1000000.0f);
+  sampleIndex++;
+
+  /* ===== CSV Serial Output ===== */
+  Serial.print(timeSec, 6);
+  Serial.print(",");
+  Serial.print(ax_lin, 6);
+  Serial.print(",");
+  Serial.print(ay_lin, 6);
+  Serial.print(",");
+  Serial.println(az_lin, 6);
+  delay(40);   // small delay to allow Serial transmission
 }
