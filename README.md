@@ -93,7 +93,7 @@ Processed data is visualized using **Python / MATLAB** on a PC.
 ---
 
 ## Team
-Aayush Sardana
-Angshumoy Mishra
-Anshu
+Aayush Sardana,
+Angshumoy Mishra,
+Anshu,
 Keshav Verma
